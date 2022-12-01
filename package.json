@@ -1,0 +1,28 @@
+{
+  "name": "elevon-cloud-server",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/omarcompany/elevon-cloud-server.git"
+  },
+  "author": "omarcompany",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/omarcompany/elevon-cloud-server/issues"
+  },
+  "dependencies": {
+    "config": "^3.3.8",
+    "express": "^4.18.2",
+    "mongoose": "^6.7.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "homepage": "https://github.com/omarcompany/elevon-cloud-server#readme",
+  "description": ""
+}

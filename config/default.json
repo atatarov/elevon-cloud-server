@@ -1,0 +1,4 @@
+{
+  "PORT": "5000",
+  "DBHost": "mongodb://localhost:27017/elevon-cloud"
+}
