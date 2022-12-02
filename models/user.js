@@ -1,3 +1,5 @@
+const { isEmail } = require('validator');
+
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -5,6 +7,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    validate: {
+      validator(value) {
+        return isEmail(value);
+      },
+      message: 'Invalid email',
+    },
   },
   password: {
     type: String,
@@ -21,6 +29,7 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
+    default: '',
   },
   files: [{ type: mongoose.Schema.Types.ObjectId, ref: 'file' }],
 });
