@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 
 const { isEmail } = require('validator');
 
+const NotFoundError = require('../errors/not-found-error');
+
+const { HTTP_RESPONSE } = require('../constants/errors');
+
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -40,11 +44,15 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject('User not found');
+        return Promise.reject(
+          new NotFoundError(HTTP_RESPONSE.notFound.message)
+        );
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return Promise.reject('User not found');
+          return Promise.reject(
+            new NotFoundError(HTTP_RESPONSE.notFound.message)
+          );
         }
         return user;
       });
