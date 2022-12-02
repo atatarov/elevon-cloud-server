@@ -1,7 +1,11 @@
 const bcrypt = require('bcrypt');
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
+const BadRequestError = require('../errors/bad-request-error');
+const UnauthorizedError = require('../errors/unauthorized-error');
 const User = require('../models/user');
+
+const { ERROR_TYPE } = require('../constants/errors');
 
 const SECRET_KEY = 'secret-key';
 
@@ -27,8 +31,13 @@ module.exports.registation = (req, res) => {
         })
       )
       .catch((err) => {
-        console.log(err);
-      });
+        if (err.name === ERROR_TYPE.validity || err.name === ERROR_TYPE.cast) {
+          next(new BadRequestError());
+          return;
+        }
+        next(err);
+      })
+      .catch(next);
   });
 };
 
@@ -40,5 +49,5 @@ module.exports.login = (req, res) => {
       const token = generateAccessToken(user._id);
       res.send({ token });
     })
-    .catch((err) => console.log(err));
+    .catch(() => next(new UnauthorizedError()));
 };
