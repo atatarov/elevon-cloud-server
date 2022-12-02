@@ -1,4 +1,4 @@
-const { HTTP_RESPONSE } = require("../constants/errors");
+const { HTTP_RESPONSE } = require('../constants/errors');
 
 module.exports = (err, req, res, next) => {
   const { statusCode = HTTP_RESPONSE.internalError, message } = err;

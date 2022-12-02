@@ -2,6 +2,7 @@ const bodyParser = require('body-parser');
 const config = require('config');
 const express = require('express');
 const mongoose = require('mongoose');
+const morgan = require('morgan');
 
 const authRouter = require('./routes/auth');
 const commonError = require('./middlewares/common-error');
@@ -25,6 +26,12 @@ app.use('/', authRouter);
 app.use(errors());
 app.use(commonError);
 
+if (config.util.getEnv('NODE_ENV') !== 'test') {
+  app.use(morgan('combined'));
+}
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
+
+module.exports = app;
