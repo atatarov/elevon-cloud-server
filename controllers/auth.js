@@ -2,12 +2,14 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const BadRequestError = require('../errors/bad-request-error');
+const Conflict = require('../errors/conflict-error');
+const FileService = require('../services/file-service.js');
+const File = require('../models/file');
 const UnauthorizedError = require('../errors/unauthorized-error');
 const User = require('../models/user');
 
 const { ERROR_TYPE } = require('../constants/errors');
-
-const SECRET_KEY = 'secret-key';
+const { SECRET_KEY } = require('../constants/constants.js');
 
 const generateAccessToken = (_id) => {
   const payload = { _id };
@@ -16,32 +18,38 @@ const generateAccessToken = (_id) => {
   });
 };
 
-module.exports.registation = (req, res) => {
+module.exports.registation = async (req, res, next) => {
   const { email, password } = req.body;
 
-  bcrypt.hash(password, 10).then((hash) => {
-    User.create({
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const user = await User.create({
       email,
       password: hash,
-    })
-      .then((user) =>
-        res.send({
-          _id: user._id,
-          email: user.email,
-        })
-      )
-      .catch((err) => {
-        if (err.name === ERROR_TYPE.validity || err.name === ERROR_TYPE.cast) {
-          next(new BadRequestError());
-          return;
-        }
-        next(err);
-      })
-      .catch(next);
-  });
+    });
+    const file = await File.create({
+      user: user._id,
+      name: 'author',
+      type: 'dir',
+    });
+    await FileService.createDir(file);
+    res.send({
+      _id: user._id,
+      email: user.email,
+    });
+  } catch (err) {
+    if (err.name === ERROR_TYPE.validity || err.name === ERROR_TYPE.cast) {
+      next(new BadRequestError());
+      return;
+    } else if (err.name === ERROR_TYPE.fileExist) {
+      next(new Conflict());
+      return;
+    }
+    next(err);
+  }
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)

@@ -1,4 +1,5 @@
 {
   "PORT": "5000",
-  "DBHost": "mongodb://localhost:27017/elevon-cloud"
+  "DBHost": "mongodb://localhost:27017/elevon-cloud",
+  "STORAGE_NAME": "files"
 }
