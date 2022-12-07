@@ -16,6 +16,7 @@ const User = require('../models/user');
 const userEmail = 'anothertestmail@gmail.com';
 const userPassword = '1234567890';
 let token = '';
+let secondFolderId = '';
 
 chai.use(chaiHttp);
 
@@ -75,6 +76,7 @@ describe('File', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
+          res.body.should.have.property('_id');
           res.body.should.have.property('name');
           res.body.should.have.property('type');
           res.body.should.have.property('size');
@@ -99,6 +101,92 @@ describe('File', () => {
         .send(file)
         .end((err, res) => {
           res.should.have.status(HTTP_RESPONSE.conflict.status);
+          done();
+        });
+    });
+  });
+
+  describe('POST /mkdir', () => {
+    it('It should create a second folder', (done) => {
+      const file = {
+        name: 'My second folder',
+        type: 'dir',
+      };
+      chai
+        .request(server)
+        .post('/mkdir')
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .send(file)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('name');
+          res.body.should.have.property('type');
+          res.body.should.have.property('size');
+          res.body.should.have.property('path');
+          res.body.should.have.property('user');
+          res.body.should.have.property('childs');
+          secondFolderId = res.body._id;
+          done();
+        });
+    });
+  });
+
+  describe('POST /mkdir', () => {
+    it('It should create a subfolder in the second folder', (done) => {
+      const file = {
+        name: 'My subfolder',
+        type: 'dir',
+        parent: secondFolderId,
+      };
+      chai
+        .request(server)
+        .post('/mkdir')
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .send(file)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('name');
+          res.body.should.have.property('type');
+          res.body.should.have.property('size');
+          res.body.should.have.property('path');
+          res.body.should.have.property('user');
+          res.body.should.have.property('childs');
+          res.body.should.have.property('parent');
+          done();
+        });
+    });
+  });
+
+  describe('GET /files', () => {
+    it('It should get files without parent, e.g. root folder list', (done) => {
+      chai
+        .request(server)
+        .get('/files')
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('array');
+          res.body.should.have.lengthOf(2);
+          done();
+        });
+    });
+  });
+
+  describe('GET /files', () => {
+    it('It should get subfolder from the second folder', (done) => {
+      chai
+        .request(server)
+        .get('/files')
+        .query({ parent: secondFolderId })
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('array');
+          res.body.should.have.lengthOf(1);
           done();
         });
     });

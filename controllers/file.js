@@ -1,3 +1,5 @@
+const path = require('path');
+
 const Conflict = require('../errors/conflict-error');
 const FileService = require('../services/file-service.js');
 const File = require('../models/file');
@@ -7,7 +9,7 @@ const { ERROR_TYPE } = require('../constants/errors');
 module.exports.createDir = async (req, res, next) => {
   try {
     const { name, type, parent } = req.body;
-    const file = await File.create({ name, type, parent, user: req.user._id });
+    const file = new File({ name, type, parent, user: req.user._id });
     const parentFile = await File.findOne({ _id: parent });
     if (!parentFile) {
       file.path = name;
@@ -27,5 +29,17 @@ module.exports.createDir = async (req, res, next) => {
     } else {
       next(error);
     }
+  }
+};
+
+module.exports.getFiles = async (req, res, next) => {
+  try {
+    const files = await File.find({
+      user: req.user._id,
+      parent: req.query?.parent,
+    });
+    return res.send(files);
+  } catch (error) {
+    next(error);
   }
 };
