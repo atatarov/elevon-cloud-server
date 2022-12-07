@@ -4,7 +4,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 
+const auth = require('./middlewares/auth');
 const authRouter = require('./routes/auth');
+const fileRouter = require('./routes/file');
 const commonError = require('./middlewares/common-error');
 
 const { errors } = require('celebrate');
@@ -22,6 +24,8 @@ mongoose.connect(DBHost, (error) => {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/', authRouter);
+app.use(auth);
+app.use('/', fileRouter);
 
 app.use(errors());
 app.use(commonError);

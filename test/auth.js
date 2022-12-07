@@ -1,20 +1,31 @@
 process.env.NODE_ENV = 'test';
-
-const User = require('../models/user');
+require('./file-service');
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const fs = require('fs');
 const server = require('../index');
 const should = chai.should();
 
-chai.use(chaiHttp);
+const { HTTP_RESPONSE } = require('../constants/errors');
+const { STORAGE_PATH } = require('../settings');
+const File = require('../models/file');
+const User = require('../models/user');
 
 const userEmail = 'anothertestmail@gmail.com';
 const userPassword = '1234567890';
 
+chai.use(chaiHttp);
+
 describe('User', () => {
-  before((done) => {
-    User.deleteMany({}, (error) => done());
+  // Clear test files before starting
+  before(async () => {
+    if (fs.existsSync(STORAGE_PATH)) {
+      fs.rmSync(STORAGE_PATH, { recursive: true, force: true });
+    }
+    fs.mkdirSync(STORAGE_PATH);
+    await User.deleteMany({});
+    await File.deleteMany({});
   });
 
   describe('POST /signup', () => {
@@ -38,6 +49,23 @@ describe('User', () => {
     });
   });
 
+  describe('POST /signup', () => {
+    it('it should return internal error', (done) => {
+      const user = {
+        email: userEmail,
+        password: userPassword,
+      };
+      chai
+        .request(server)
+        .post('/signup')
+        .send(user)
+        .end((err, res) => {
+          res.should.have.status(HTTP_RESPONSE.internalError.status);
+          done();
+        });
+    });
+  });
+
   describe('POST /signin', () => {
     it('sign in', (done) => {
       const user = {
@@ -53,7 +81,23 @@ describe('User', () => {
           res.body.should.be.a('object');
           res.body.should.have.property('token');
           res.body.should.not.have.property('password');
-          token = res.body.token;
+          done();
+        });
+    });
+  });
+
+  describe('POST /signin', () => {
+    it('it should return unauthorized error', (done) => {
+      const user = {
+        email: userEmail,
+        password: 'random password',
+      };
+      chai
+        .request(server)
+        .post('/signin')
+        .send(user)
+        .end((err, res) => {
+          res.should.have.status(HTTP_RESPONSE.unauthorized.status);
           done();
         });
     });
