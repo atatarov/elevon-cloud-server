@@ -27,10 +27,15 @@ module.exports.registation = async (req, res, next) => {
       email,
       password: hash,
     });
+    /* parent shouldn't be empty,
+       user shouldn't have ability of selecting user folder
+       with all root files
+    */
     const file = await File.create({
       user: user._id,
       name: 'author',
       type: 'dir',
+      parent: user._id,
     });
     await FileService.createDir(file);
     res.send({
