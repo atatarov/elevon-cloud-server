@@ -3,15 +3,24 @@ const config = require('config');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
-
-const auth = require('./middlewares/auth');
-const authRouter = require('./routes/auth');
-const fileRouter = require('./routes/file');
-const commonError = require('./middlewares/common-error');
+const fs = require('fs');
 
 const { errors } = require('celebrate');
 
+const auth = require('./middlewares/auth');
+const authRouter = require('./routes/auth');
+const commonError = require('./middlewares/common-error');
+const fileRouter = require('./routes/file');
+
+const { cors } = require('./middlewares/cors');
 const { PORT = 5000, DBHost } = config;
+const { STORAGE_PATH } = require('./settings');
+
+const initStorage = () => {
+  if (!fs.existsSync(STORAGE_PATH)) {
+    fs.mkdirSync(STORAGE_PATH);
+  }
+};
 
 const app = express();
 
@@ -21,8 +30,11 @@ mongoose.connect(DBHost, (error) => {
   console.log(`Connected to elevon cloud server ${DBHost}`);
 });
 
+initStorage();
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors);
 app.use('/', authRouter);
 app.use(auth);
 app.use('/', fileRouter);
