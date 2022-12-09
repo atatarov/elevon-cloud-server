@@ -19,11 +19,12 @@ const generateAccessToken = (_id) => {
 };
 
 module.exports.registation = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
 
   try {
     const hash = await bcrypt.hash(password, 10);
     const user = await User.create({
+      name,
       email,
       password: hash,
     });
@@ -41,6 +42,7 @@ module.exports.registation = async (req, res, next) => {
     res.send({
       _id: user._id,
       email: user.email,
+      name: user.name,
     });
   } catch (err) {
     if (err.name === ERROR_TYPE.validity || err.name === ERROR_TYPE.cast) {

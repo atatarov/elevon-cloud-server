@@ -8,6 +8,10 @@ const NotFoundError = require('../errors/not-found-error');
 const { HTTP_RESPONSE } = require('../constants/errors');
 
 const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    default: 'John',
+  },
   email: {
     type: String,
     required: true,

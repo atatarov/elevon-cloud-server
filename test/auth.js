@@ -14,6 +14,7 @@ const User = require('../models/user');
 
 const userEmail = 'anothertestmail@gmail.com';
 const userPassword = '1234567890';
+const userName = 'Vasya';
 
 chai.use(chaiHttp);
 
@@ -31,6 +32,7 @@ describe('User', () => {
   describe('POST /signup', () => {
     it('it should POST a user', (done) => {
       const user = {
+        name: userName,
         email: userEmail,
         password: userPassword,
       };
@@ -42,6 +44,7 @@ describe('User', () => {
           res.should.have.status(200);
           res.body.should.be.a('object');
           res.body.should.have.property('_id');
+          res.body.should.have.property('name');
           res.body.should.have.property('email');
           res.body.should.not.have.property('password');
           done();
