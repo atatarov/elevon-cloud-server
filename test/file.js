@@ -83,6 +83,7 @@ describe('File', () => {
           res.body.should.have.property('path');
           res.body.should.have.property('user');
           res.body.should.have.property('childs');
+          res.body.should.have.property('createdAt');
           done();
         });
     });

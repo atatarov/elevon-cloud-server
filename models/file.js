@@ -32,6 +32,10 @@ const fileSchema = new mongoose.Schema({
       ref: 'file',
     },
   ],
+  createdAt: {
+    type: Date,
+    default: new Date(),
+  },
 });
 
 module.exports = mongoose.model('file', fileSchema);
