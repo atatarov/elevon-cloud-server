@@ -3,6 +3,7 @@ const config = require('config');
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const fileUpload = require('express-fileupload');
 const fs = require('fs');
 
 const { errors } = require('celebrate');
@@ -34,6 +35,7 @@ initStorage();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(fileUpload({}));
 app.use(cors);
 app.use('/', authRouter);
 app.use(auth);

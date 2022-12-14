@@ -4,6 +4,7 @@ require('./auth');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
+const path = require('path');
 const server = require('../index');
 const should = chai.should();
 
@@ -188,6 +189,56 @@ describe('File', () => {
           res.should.have.status(200);
           res.body.should.be.a('array');
           res.body.should.have.lengthOf(1);
+          done();
+        });
+    });
+  });
+
+  describe('POST /files/upload', () => {
+    it('It should upload a test file', (done) => {
+      const testFilePath = path.join(__dirname, 'test-file.txt');
+
+      chai
+        .request(server)
+        .post('/files/upload')
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .attach('file', testFilePath)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('name');
+          res.body.should.have.property('type');
+          res.body.should.have.property('size');
+          res.body.should.have.property('path');
+          res.body.should.have.property('user');
+          done();
+        });
+    });
+  });
+
+  describe('POST /files/upload', () => {
+    it('It should upload a test file to second folder', (done) => {
+      const testFilePath = path.join(__dirname, 'test-file.txt');
+      const file = {
+        parent: secondFolderId,
+      };
+      chai
+        .request(server)
+        .post('/files/upload')
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .field(file)
+        .attach('file', testFilePath)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('_id');
+          res.body.should.have.property('name');
+          res.body.should.have.property('type');
+          res.body.should.have.property('size');
+          res.body.should.have.property('path');
+          res.body.should.have.property('user');
+          res.body.should.have.property('parent');
           done();
         });
     });
