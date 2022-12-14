@@ -2,6 +2,9 @@ const HTTP_RESPONSE = {
   badRequest: {
     status: 400,
     message: `Invalid data type`,
+    absentMessage: {
+      noSpace: 'There is not enough space on the disk',
+    },
   },
   notFound: {
     status: 404,
