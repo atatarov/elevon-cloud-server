@@ -218,6 +218,26 @@ describe('File', () => {
   });
 
   describe('POST /files/upload', () => {
+    it('It should return error file exist', (done) => {
+      const testFilePath = path.join(__dirname, 'test-file.txt');
+
+      chai
+        .request(server)
+        .post('/files/upload')
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .attach('file', testFilePath)
+        .end((err, res) => {
+          res.should.have.status(HTTP_RESPONSE.conflict.status);
+          res.body.should.have.property('message');
+          res.body.message.should.be.eql(
+            HTTP_RESPONSE.conflict.absentMessage.fileExist
+          );
+          done();
+        });
+    });
+  });
+
+  describe('POST /files/upload', () => {
     it('It should upload a test file to second folder', (done) => {
       const testFilePath = path.join(__dirname, 'test-file.txt');
       const file = {

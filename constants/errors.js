@@ -13,7 +13,13 @@ const HTTP_RESPONSE = {
   internalError: { status: 500, message: 'Server error' },
   unauthorized: { status: 401, message: 'You need authorization' },
   forbidden: { status: 403, message: 'Access is denied' },
-  conflict: { status: 409, message: 'Conflict error' },
+  conflict: {
+    status: 409,
+    message: 'Conflict error',
+    absentMessage: {
+      fileExist: 'File exist',
+    },
+  },
 };
 
 const ERROR_TYPE = {
