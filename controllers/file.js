@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 
 const Conflict = require('../errors/conflict-error');
@@ -68,6 +69,11 @@ module.exports.uploadFile = async (req, res, next) => {
       ? path.join(STORAGE_PATH, user._id.toString(), parent.path, file.name)
       : path.join(STORAGE_PATH, user._id.toString(), file.name);
 
+    if (fs.existsSync(filePath)) {
+      next(new Conflict(HTTP_RESPONSE.conflict.absentMessage.fileExist));
+      return;
+    }
+
     file.mv(filePath);
 
     const type = file.name.split('.').pop();
@@ -86,7 +92,6 @@ module.exports.uploadFile = async (req, res, next) => {
 
     return res.send(dbFile);
   } catch (error) {
-    console.log(error)
     next(error);
   }
 };

@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
   },
   diskSpace: {
     type: Number,
-    default: 1024 * 7 * 10,
+    default: 1024 * 1024 * 10,
   },
   usedSpace: {
     type: Number,
