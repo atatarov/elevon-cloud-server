@@ -2,7 +2,12 @@ const { celebrate, Joi } = require('celebrate');
 
 const router = require('express').Router();
 
-const { createDir, getFiles, uploadFile } = require('../controllers/file');
+const {
+  createDir,
+  getFiles,
+  uploadFile,
+  download,
+} = require('../controllers/file');
 
 router.post(
   '/mkdir',
@@ -34,6 +39,16 @@ router.post(
     }),
   }),
   uploadFile
+);
+
+router.get(
+  '/files/download/:id',
+  celebrate({
+    params: Joi.object().keys({
+      id: Joi.string().hex().length(24).required(),
+    }),
+  }),
+  download
 );
 
 module.exports = router;
