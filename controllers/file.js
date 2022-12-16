@@ -9,6 +9,7 @@ const User = require('../models/user');
 
 const { ERROR_TYPE, HTTP_RESPONSE } = require('../constants/errors');
 const { STORAGE_PATH } = require('../settings');
+const NotFoundError = require('../errors/not-found-error');
 
 module.exports.createDir = async (req, res, next) => {
   try {
@@ -91,6 +92,25 @@ module.exports.uploadFile = async (req, res, next) => {
     await user.save();
 
     return res.send(dbFile);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.download = async (req, res, next) => {
+  try {
+    const file = await File.findOne({ _id: req.params.id, user: req.user._id });
+    const filePath = path.join(
+      STORAGE_PATH,
+      req.user._id.toString(),
+      file.path,
+      file.name
+    );
+    if (!fs.existsSync(filePath)) {
+      next(NotFoundError());
+      return;
+    }
+    return res.download(filePath, file.name);
   } catch (error) {
     next(error);
   }

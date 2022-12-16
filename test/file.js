@@ -4,6 +4,7 @@ require('./auth');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
+const md5 = require('md5');
 const path = require('path');
 const server = require('../index');
 const should = chai.should();
@@ -19,7 +20,25 @@ const userPassword = '1234567890';
 let token = '';
 let secondFolderId = '';
 
+let testFileId = '';
+const testFilePath = path.join(__dirname, 'test-file.txt');
+let testFileHashSum = '';
+
+const fakeTestFilePath = path.join(__dirname, 'test-file-fake.txt');
+let fakeTestFileHashSum = '';
+
 chai.use(chaiHttp);
+
+const binaryParser = function (res, cb) {
+  res.setEncoding('binary');
+  res.data = '';
+  res.on('data', function (chunk) {
+    res.data += chunk;
+  });
+  res.on('end', function () {
+    cb(null, Buffer.from(res.data, 'binary'));
+  });
+};
 
 describe('File', () => {
   // Clear test files before starting
@@ -196,8 +215,6 @@ describe('File', () => {
 
   describe('POST /files/upload', () => {
     it('It should upload a test file', (done) => {
-      const testFilePath = path.join(__dirname, 'test-file.txt');
-
       chai
         .request(server)
         .post('/files/upload')
@@ -219,8 +236,6 @@ describe('File', () => {
 
   describe('POST /files/upload', () => {
     it('It should return error file exist', (done) => {
-      const testFilePath = path.join(__dirname, 'test-file.txt');
-
       chai
         .request(server)
         .post('/files/upload')
@@ -239,7 +254,6 @@ describe('File', () => {
 
   describe('POST /files/upload', () => {
     it('It should upload a test file to second folder', (done) => {
-      const testFilePath = path.join(__dirname, 'test-file.txt');
       const file = {
         parent: secondFolderId,
       };
@@ -259,6 +273,40 @@ describe('File', () => {
           res.body.should.have.property('path');
           res.body.should.have.property('user');
           res.body.should.have.property('parent');
+          testFileId = res.body._id;
+          done();
+        });
+    });
+  });
+
+  // Get hash of the test file
+  before((done) => {
+    fs.readFile(testFilePath, (err, buf) => {
+      testFileHashSum = md5(buf);
+      done();
+    });
+  });
+
+  // Get hash of the fake test file
+  before((done) => {
+    fs.readFile(fakeTestFilePath, (err, buf) => {
+      fakeTestFileHashSum = md5(buf);
+      done();
+    });
+  });
+
+  describe('GET /files/download', () => {
+    it('It should check download test file', (done) => {
+      chai
+        .request(server)
+        .get(`/files/download/${testFileId}`)
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .buffer()
+        .parse(binaryParser)
+        .end((err, res) => {
+          res.should.have.status(200);
+          md5(res.body).should.be.eql(testFileHashSum);
+          md5(res.body).should.not.be.eql(fakeTestFileHashSum);
           done();
         });
     });
