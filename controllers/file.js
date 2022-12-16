@@ -3,13 +3,13 @@ const path = require('path');
 
 const Conflict = require('../errors/conflict-error');
 const BadRequestError = require('../errors/bad-request-error');
+const NotFoundError = require('../errors/not-found-error');
 const FileService = require('../services/file-service.js');
 const File = require('../models/file');
 const User = require('../models/user');
 
 const { ERROR_TYPE, HTTP_RESPONSE } = require('../constants/errors');
 const { STORAGE_PATH } = require('../settings');
-const NotFoundError = require('../errors/not-found-error');
 
 module.exports.createDir = async (req, res, next) => {
   try {
@@ -79,11 +79,13 @@ module.exports.uploadFile = async (req, res, next) => {
 
     const type = file.name.split('.').pop();
 
+    const dbFilePath = parent ? path.join(parent.path, file.name) : file.name;
+
     const dbFile = new File({
       name: file.name,
       type,
       size: file.size,
-      path: parent?.path,
+      path: dbFilePath,
       parent: parent?._id,
       user: user._id,
     });
@@ -100,17 +102,38 @@ module.exports.uploadFile = async (req, res, next) => {
 module.exports.download = async (req, res, next) => {
   try {
     const file = await File.findOne({ _id: req.params.id, user: req.user._id });
+    if (!file) {
+      next(new NotFoundError());
+      return;
+    }
+
     const filePath = path.join(
       STORAGE_PATH,
       req.user._id.toString(),
-      file.path,
-      file.name
+      file.path
     );
+
     if (!fs.existsSync(filePath)) {
-      next(NotFoundError());
+      next(new NotFoundError());
       return;
     }
     return res.download(filePath, file.name);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.deleteFile = async (req, res, next) => {
+  try {
+    const file = await File.findOne({ _id: req.params.id, user: req.user._id });
+    if (!file) {
+      next(new NotFoundError());
+      return;
+    }
+    const id = file.id;
+    await FileService.deleteFile(file);
+    await file.remove();
+    return res.send({ id });
   } catch (error) {
     next(error);
   }

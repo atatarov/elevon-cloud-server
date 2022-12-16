@@ -27,6 +27,7 @@ const ERROR_TYPE = {
   validity: 'ValidationError',
   fileExist: 'FileExistError',
   internal: 'InteralError',
+  notFound: 'NotFoundError',
 };
 
 module.exports = { ERROR_TYPE, HTTP_RESPONSE };

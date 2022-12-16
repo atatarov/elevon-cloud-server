@@ -4,9 +4,10 @@ const router = require('express').Router();
 
 const {
   createDir,
+  deleteFile,
+  download,
   getFiles,
   uploadFile,
-  download,
 } = require('../controllers/file');
 
 router.post(
@@ -49,6 +50,16 @@ router.get(
     }),
   }),
   download
+);
+
+router.delete(
+  '/files/delete/:id',
+  celebrate({
+    params: Joi.object().keys({
+      id: Joi.string().hex().length(24).required(),
+    }),
+  }),
+  deleteFile
 );
 
 module.exports = router;
