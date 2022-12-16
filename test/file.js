@@ -229,6 +229,7 @@ describe('File', () => {
           res.body.should.have.property('size');
           res.body.should.have.property('path');
           res.body.should.have.property('user');
+          testFileId = res.body._id;
           done();
         });
     });
@@ -273,7 +274,6 @@ describe('File', () => {
           res.body.should.have.property('path');
           res.body.should.have.property('user');
           res.body.should.have.property('parent');
-          testFileId = res.body._id;
           done();
         });
     });
@@ -307,6 +307,66 @@ describe('File', () => {
           res.should.have.status(200);
           md5(res.body).should.be.eql(testFileHashSum);
           md5(res.body).should.not.be.eql(fakeTestFileHashSum);
+          done();
+        });
+    });
+  });
+
+  describe('DELETE /files/delete', () => {
+    it('It should delete a test file', (done) => {
+      chai
+        .request(server)
+        .delete(`/files/delete/${testFileId}`)
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('id');
+          res.body.id.should.be.eql(testFileId);
+          done();
+        });
+    });
+  });
+
+  describe('DELETE /files/delete', () => {
+    it('It should return error after trying delete a test file which is not exist anymore', (done) => {
+      chai
+        .request(server)
+        .delete(`/files/delete/${testFileId}`)
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .end((err, res) => {
+          res.should.have.status(HTTP_RESPONSE.notFound.status);
+          done();
+        });
+    });
+  });
+
+  describe('GET /files/download', () => {
+    it('It should return error after trying download a file which is not exist anymore', (done) => {
+      chai
+        .request(server)
+        .get(`/files/download/${testFileId}`)
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .buffer()
+        .parse(binaryParser)
+        .end((err, res) => {
+          res.should.have.status(HTTP_RESPONSE.notFound.status);
+          done();
+        });
+    });
+  });
+
+  describe('DELETE /files/delete', () => {
+    it('It should delete a secondFolder', (done) => {
+      chai
+        .request(server)
+        .delete(`/files/delete/${secondFolderId}`)
+        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('id');
+          res.body.id.should.be.eql(secondFolderId);
           done();
         });
     });
