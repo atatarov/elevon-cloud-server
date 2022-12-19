@@ -6,6 +6,8 @@ npm-debug.log*
 node_modules
 test-files
 files
+static
+test-static
 # Optional npm cache directory
 .npm
 # Optional REPL history

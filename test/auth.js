@@ -18,7 +18,7 @@ const userName = 'Vasya';
 
 chai.use(chaiHttp);
 
-describe('User', () => {
+describe('Auth', () => {
   // Clear test files before starting
   before(async () => {
     if (fs.existsSync(STORAGE_PATH)) {

@@ -12,14 +12,18 @@ const auth = require('./middlewares/auth');
 const authRouter = require('./routes/auth');
 const commonError = require('./middlewares/common-error');
 const fileRouter = require('./routes/file');
+const userRouter = require('./routes/user');
 
 const { cors } = require('./middlewares/cors');
-const { PORT = 5000, DBHost } = config;
+const { PORT = 5000, DBHost, STATIC_DIR_NAME } = config;
 const { STORAGE_PATH } = require('./settings');
 
 const initStorage = () => {
   if (!fs.existsSync(STORAGE_PATH)) {
     fs.mkdirSync(STORAGE_PATH);
+  }
+  if (!fs.existsSync(STATIC_DIR_NAME)) {
+    fs.mkdirSync(STATIC_DIR_NAME);
   }
 };
 
@@ -36,10 +40,12 @@ initStorage();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(fileUpload({}));
+app.use(express.static(STATIC_DIR_NAME));
 app.use(cors);
 app.use('/', authRouter);
 app.use(auth);
 app.use('/', fileRouter);
+app.use('/', userRouter);
 
 app.use(errors());
 app.use(commonError);

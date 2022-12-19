@@ -1,5 +1,5 @@
 process.env.NODE_ENV = 'test';
-require('./auth');
+require('./user');
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -21,10 +21,10 @@ let token = '';
 let secondFolderId = '';
 
 let testFileId = '';
-const testFilePath = path.join(__dirname, 'test-file.txt');
+const testFilePath = path.join(__dirname, 'src', 'test-file.txt');
 let testFileHashSum = '';
 
-const fakeTestFilePath = path.join(__dirname, 'test-file-fake.txt');
+const fakeTestFilePath = path.join(__dirname, 'src', 'test-file-fake.txt');
 let fakeTestFileHashSum = '';
 
 chai.use(chaiHttp);
