@@ -4,7 +4,7 @@ require('./file-service');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
-const server = require('../index');
+const server = require('../app');
 const should = chai.should();
 
 const { HTTP_RESPONSE } = require('../constants/errors');
@@ -84,7 +84,7 @@ describe('Auth', () => {
           res.body.should.be.a('object');
           res.body.should.have.property('token');
           res.body.should.have.property('user');
-          res.body.should.not.have.property('password');
+          res.body.user.should.not.have.property('password');
           done();
         });
     });
