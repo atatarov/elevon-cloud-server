@@ -8,7 +8,7 @@ const path = require('path');
 const should = chai.should();
 
 const { TOKEN_TYPE } = require('../constants/constants');
-const server = require('../index');
+const server = require('../app');
 const { STORAGE_PATH, STATIC_PATH } = require('../settings');
 const User = require('../models/user');
 

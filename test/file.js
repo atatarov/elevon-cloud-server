@@ -6,7 +6,7 @@ const chaiHttp = require('chai-http');
 const fs = require('fs');
 const md5 = require('md5');
 const path = require('path');
-const server = require('../index');
+const server = require('../app');
 const should = chai.should();
 
 const { HTTP_RESPONSE } = require('../constants/errors');

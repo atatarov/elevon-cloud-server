@@ -1,6 +1,7 @@
 {
-  "PORT": "5002",
+  "PORT": "3022",
   "DBHost": "mongodb://localhost:27017/elevon-cloud-test-db",
   "STORAGE_NAME": "test-files",
-  "STATIC_DIR_NAME": "test-static"
+  "STATIC_DIR_NAME": "test-static",
+  "SECRET_KEY": "some-secret-key"
 }

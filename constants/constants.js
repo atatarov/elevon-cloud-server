@@ -1,4 +1,4 @@
-const SECRET_KEY = 'some-secret-key';
+const { SECRET_KEY } = require('config');
 
 const TOKEN_TYPE = 'Bearer ';
 

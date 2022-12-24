@@ -62,7 +62,16 @@ module.exports.login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = generateAccessToken(user._id);
-      res.send({ token, user });
+      const userData = {
+        avatar: user.avatar,
+        diskSpace: user.diskSpace,
+        email: user.email,
+        name: user.name,
+        usedSpace: user.usedSpace,
+        _id: user._id,
+      };
+
+      res.send({ user: userData, token });
     })
     .catch(() => next(new UnauthorizedError()));
 };
