@@ -14,7 +14,7 @@ const { STORAGE_PATH } = require('../settings');
 module.exports.createDir = async (req, res, next) => {
   try {
     const { name, type, parent } = req.body;
-    const file = new File({ name, type, parent, user: req.user._id });
+    const file = new File({ name, type, parent, user: req.user.id });
     const parentFile = await File.findOne({ _id: parent });
     if (!parentFile) {
       file.path = name;
@@ -40,7 +40,7 @@ module.exports.createDir = async (req, res, next) => {
 module.exports.getFiles = async (req, res, next) => {
   try {
     const files = await File.find({
-      user: req.user._id,
+      user: req.user.id,
       parent: req.query?.parent,
     });
     return res.send(files);
@@ -54,10 +54,10 @@ module.exports.uploadFile = async (req, res, next) => {
     const file = req.files.file;
 
     const parent = await File.findOne({
-      user: req.user._id,
+      user: req.user.id,
       _id: req.body.parent,
     });
-    const user = await User.findOne({ _id: req.user._id });
+    const user = await User.findOne({ _id: req.user.id });
 
     if (user.usedSpace + file.size > user.diskSpace) {
       next(new BadRequestError(HTTP_RESPONSE.badRequest.absentMessage.noSpace));
@@ -101,7 +101,7 @@ module.exports.uploadFile = async (req, res, next) => {
 
 module.exports.download = async (req, res, next) => {
   try {
-    const file = await File.findOne({ _id: req.params.id, user: req.user._id });
+    const file = await File.findOne({ _id: req.params.id, user: req.user.id });
     if (!file) {
       next(new NotFoundError());
       return;
@@ -109,7 +109,7 @@ module.exports.download = async (req, res, next) => {
 
     const filePath = path.join(
       STORAGE_PATH,
-      req.user._id.toString(),
+      req.user.id.toString(),
       file.path
     );
 
@@ -125,7 +125,7 @@ module.exports.download = async (req, res, next) => {
 
 module.exports.deleteFile = async (req, res, next) => {
   try {
-    const file = await File.findOne({ _id: req.params.id, user: req.user._id });
+    const file = await File.findOne({ _id: req.params.id, user: req.user.id });
     if (!file) {
       next(new NotFoundError());
       return;

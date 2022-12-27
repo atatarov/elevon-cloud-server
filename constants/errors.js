@@ -12,12 +12,19 @@ const HTTP_RESPONSE = {
   },
   internalError: { status: 500, message: 'Server error' },
   unauthorized: { status: 401, message: 'You need authorization' },
-  forbidden: { status: 403, message: 'Access is denied' },
+  forbidden: {
+    status: 403,
+    message: 'Access is denied',
+    absentMessage: {
+      noActivation: 'You need activate your account email',
+    },
+  },
   conflict: {
     status: 409,
     message: 'Conflict error',
     absentMessage: {
       fileExist: 'File exist',
+      userExist: 'User exist',
     },
   },
 };

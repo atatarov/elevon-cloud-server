@@ -2,7 +2,13 @@ const { celebrate, Joi } = require('celebrate');
 
 const router = require('express').Router();
 
-const { login, registation } = require('../controllers/auth');
+const {
+  activateAccount,
+  login,
+  logout,
+  registration,
+  refreshAccessToken,
+} = require('../controllers/auth');
 
 router.post(
   '/signup',
@@ -13,7 +19,7 @@ router.post(
       password: Joi.string().required(),
     }),
   }),
-  registation
+  registration
 );
 
 router.post(
@@ -26,5 +32,11 @@ router.post(
   }),
   login
 );
+
+router.post('/signout', logout);
+
+router.get('/activate/:link', activateAccount);
+
+router.get('/refresh', refreshAccessToken);
 
 module.exports = router;

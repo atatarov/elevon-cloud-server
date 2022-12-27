@@ -41,6 +41,13 @@ const userSchema = new mongoose.Schema({
     default: '',
   },
   files: [{ type: mongoose.Schema.Types.ObjectId, ref: 'file' }],
+  isActivated: {
+    type: Boolean,
+    default: false,
+  },
+  activationLink: {
+    type: String,
+  },
 });
 
 userSchema.statics.findUserByCredentials = function (email, password) {

@@ -1,5 +1,5 @@
 process.env.NODE_ENV = 'test';
-require('./file-service');
+require('./auth-service');
 
 const chai = require('chai');
 const chaiHttp = require('chai-http');
@@ -10,11 +10,17 @@ const should = chai.should();
 const { HTTP_RESPONSE } = require('../constants/errors');
 const { STORAGE_PATH } = require('../settings');
 const File = require('../models/file');
+const { TEST_USER_EMAIL } = require('config');
+const Token = require('../models/token');
 const User = require('../models/user');
 
-const userEmail = 'anothertestmail@gmail.com';
-const userPassword = '1234567890';
-const userName = 'Vasya';
+const testUser = {
+  name: 'Vasya',
+  email: TEST_USER_EMAIL,
+  password: 'test-password',
+  activationLink: '',
+  cookies: null,
+};
 
 chai.use(chaiHttp);
 
@@ -27,14 +33,15 @@ describe('Auth', () => {
     fs.mkdirSync(STORAGE_PATH);
     await User.deleteMany({});
     await File.deleteMany({});
+    await Token.deleteMany({});
   });
 
   describe('POST /signup', () => {
     it('it should POST a user', (done) => {
       const user = {
-        name: userName,
-        email: userEmail,
-        password: userPassword,
+        name: testUser.name,
+        email: testUser.email,
+        password: testUser.password,
       };
       chai
         .request(server)
@@ -43,10 +50,14 @@ describe('Auth', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('_id');
+          res.body.should.have.property('id');
           res.body.should.have.property('name');
           res.body.should.have.property('email');
+          res.body.should.have.property('isActivated');
+          res.body.should.not.have.property('accessToken');
+          res.body.should.not.have.property('refreshToken');
           res.body.should.not.have.property('password');
+          res.body.isActivated.should.be.eql(false);
           done();
         });
     });
@@ -55,25 +66,75 @@ describe('Auth', () => {
   describe('POST /signup', () => {
     it('it should return internal error', (done) => {
       const user = {
-        email: userEmail,
-        password: userPassword,
+        name: testUser.name,
+        email: testUser.email,
+        password: testUser.password,
       };
       chai
         .request(server)
         .post('/signup')
         .send(user)
         .end((err, res) => {
-          res.should.have.status(HTTP_RESPONSE.internalError.status);
+          res.should.have.status(HTTP_RESPONSE.conflict.status);
           done();
         });
     });
   });
 
   describe('POST /signin', () => {
-    it('sign in', (done) => {
+    it('It should return forbidden error', (done) => {
       const user = {
-        email: userEmail,
-        password: userPassword,
+        email: testUser.email,
+        password: testUser.password,
+      };
+      chai
+        .request(server)
+        .post('/signin')
+        .send(user)
+        .end((err, res) => {
+          res.should.have.status(HTTP_RESPONSE.forbidden.status);
+          done();
+        });
+    });
+  });
+
+  describe('POST /signin', () => {
+    it('it should return not found error', (done) => {
+      const user = {
+        email: testUser.email,
+        password: 'random password',
+      };
+      chai
+        .request(server)
+        .post('/signin')
+        .send(user)
+        .end((err, res) => {
+          res.should.have.status(HTTP_RESPONSE.notFound.status);
+          done();
+        });
+    });
+  });
+
+  describe('GET /activate/link', () => {
+    it('it should activate account', (done) => {
+      User.findOne({ email: testUser.email }).then((user) => {
+        const { activationLink } = user;
+        chai
+          .request(server)
+          .get(`/activate/${activationLink}`)
+          .end((err, res) => {
+            res.should.have.status(200);
+            done();
+          });
+      });
+    });
+  });
+
+  describe('POST /signin', () => {
+    it('it should login', (done) => {
+      const user = {
+        email: testUser.email,
+        password: testUser.password,
       };
       chai
         .request(server)
@@ -82,24 +143,70 @@ describe('Auth', () => {
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('token');
-          res.body.should.have.property('user');
-          res.body.user.should.not.have.property('password');
+          res.body.should.have.property('id');
+          res.body.should.have.property('name');
+          res.body.should.have.property('email');
+          res.body.should.have.property('isActivated');
+          res.body.should.have.property('diskSpace');
+          res.body.should.have.property('usedSpace');
+          res.body.should.have.property('avatar');
+          res.body.should.have.property('accessToken');
+          res.body.should.not.have.property('refreshToken');
+          res.body.should.not.have.property('password');
+          res.body.isActivated.should.be.eql(true);
+          testUser.accessToken = res.body.accessToken;
+          testUser.refreshToken = res.header['set-cookie'].pop().split(';')[0];
           done();
         });
     });
   });
 
-  describe('POST /signin', () => {
-    it('it should return unauthorized error', (done) => {
-      const user = {
-        email: userEmail,
-        password: 'random password',
-      };
+  describe('GET /refresh', () => {
+    it('it should refresh token', (done) => {
       chai
         .request(server)
-        .post('/signin')
-        .send(user)
+        .get('/refresh')
+        .set('Cookie', testUser.refreshToken)
+        .end((err, res) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.should.have.property('id');
+          res.body.should.have.property('name');
+          res.body.should.have.property('email');
+          res.body.should.have.property('isActivated');
+          res.body.should.have.property('diskSpace');
+          res.body.should.have.property('usedSpace');
+          res.body.should.have.property('avatar');
+          res.body.should.have.property('accessToken');
+          res.body.should.not.have.property('refreshToken');
+          res.body.should.not.have.property('password');
+          res.body.isActivated.should.be.eql(true);
+          res.body.accessToken.should.not.be.eql(testUser.accessToken);
+          testUser.refreshToken = res.header['set-cookie'].pop().split(';')[0];
+          done();
+        });
+    });
+  });
+
+  describe('GET /signout', () => {
+    it('it should sign out', (done) => {
+      chai
+        .request(server)
+        .post('/signout')
+        .set('Cookie', testUser.refreshToken)
+        .end((err, res) => {
+          res.should.have.status(200);
+          done();
+        });
+    });
+  });
+
+  describe('GET /refresh', () => {
+    it('it should return unauthorized there is trying to refresh token after logout', (done) => {
+      chai
+        .request(server)
+        .get('/refresh')
+        .set('Cookie', testUser.refreshToken)
         .end((err, res) => {
           res.should.have.status(HTTP_RESPONSE.unauthorized.status);
           done();
