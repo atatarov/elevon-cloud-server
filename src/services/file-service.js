@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { STORAGE_PATH } = require('../settings');
+const { STORAGE_PATH } = require('../../settings');
 const { ERROR_TYPE } = require('../constants/errors');
 
 const getFilePath = (file) => {

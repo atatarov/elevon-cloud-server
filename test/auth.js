@@ -7,7 +7,7 @@ const fs = require('fs');
 const should = chai.should();
 
 const { HTTP_RESPONSE } = require('../src/constants/errors');
-const { STORAGE_PATH } = require('../src/settings');
+const { STORAGE_PATH } = require('../settings');
 const File = require('../src/models/file');
 const server = require('../app');
 const { TEST_USER_EMAIL } = require('config');

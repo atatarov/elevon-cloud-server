@@ -1,4 +1,8 @@
-const allowedCors = ['http://localhost:5000', 'https://elevon-cloud.fvds.ru'];
+const allowedCors = [
+  'http://localhost:5000',
+  'https://elevon-cloud.fvds.ru',
+  'http://localhost:3000',
+];
 
 const cors = (req, res, next) => {
   const { origin } = req.headers;

@@ -9,6 +9,6 @@
   "SMTP_PORT": "",
   "SMTP_USER": "",
   "SMTP_PASSWORD": "",
-  "API_URL": "https://elevon-cloud-server.fvds.ru",
-  "CLIENT_URL": "https://elevon-cloud.fvds.ru"
+  "API_URL": "http://localhost:3021",
+  "CLIENT_URL": "http://localhost:3000"
 }

@@ -9,7 +9,7 @@ const File = require('../models/file');
 const User = require('../models/user');
 
 const { ERROR_TYPE, HTTP_RESPONSE } = require('../constants/errors');
-const { STORAGE_PATH } = require('../settings');
+const { STORAGE_PATH } = require('../../settings');
 
 module.exports.createDir = async (req, res, next) => {
   try {

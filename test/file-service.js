@@ -8,7 +8,7 @@ const path = require('path');
 const FileService = require('../src/services/file-service.js');
 
 const { ERROR_TYPE } = require('../src/constants/errors');
-const { STORAGE_PATH } = require('../src/settings');
+const { STORAGE_PATH } = require('../settings');
 
 const testUserDir = {
   user: 'Jonh Doe',
