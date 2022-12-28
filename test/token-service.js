@@ -5,10 +5,10 @@ const chai = require('chai');
 const fs = require('fs');
 const should = chai.should();
 
-const { STORAGE_PATH } = require('../settings');
-const Token = require('../models/token');
-const TokenService = require('../services/token-service');
-const User = require('../models/user');
+const { STORAGE_PATH } = require('../src/settings');
+const Token = require('../src/models/token');
+const TokenService = require('../src/services/token-service');
+const User = require('../src/models/user');
 
 const testUser = {
   name: 'Vasya',

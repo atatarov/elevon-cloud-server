@@ -4,15 +4,15 @@ require('./auth-service');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const fs = require('fs');
-const server = require('../app');
 const should = chai.should();
 
-const { HTTP_RESPONSE } = require('../constants/errors');
-const { STORAGE_PATH } = require('../settings');
-const File = require('../models/file');
+const { HTTP_RESPONSE } = require('../src/constants/errors');
+const { STORAGE_PATH } = require('../src/settings');
+const File = require('../src/models/file');
+const server = require('../app');
 const { TEST_USER_EMAIL } = require('config');
-const Token = require('../models/token');
-const User = require('../models/user');
+const Token = require('../src/models/token');
+const User = require('../src/models/user');
 
 const testUser = {
   name: 'Vasya',

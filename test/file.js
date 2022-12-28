@@ -6,16 +6,16 @@ const chaiHttp = require('chai-http');
 const fs = require('fs');
 const md5 = require('md5');
 const path = require('path');
-const server = require('../app');
 const should = chai.should();
 
-const { HTTP_RESPONSE } = require('../constants/errors');
+const { HTTP_RESPONSE } = require('../src/constants/errors');
 const { TEST_USER_EMAIL } = require('config');
-const { TOKEN_TYPE } = require('../constants/constants');
-const { STORAGE_PATH } = require('../settings');
-const File = require('../models/file');
-const Token = require('../models/token');
-const User = require('../models/user');
+const { TOKEN_TYPE } = require('../src/constants/constants');
+const server = require('../app');
+const { STORAGE_PATH } = require('../src/settings');
+const File = require('../src/models/file');
+const Token = require('../src/models/token');
+const User = require('../src/models/user');
 
 const testUser = {
   name: 'Vasya',
