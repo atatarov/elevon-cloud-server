@@ -5,13 +5,13 @@ const chai = require('chai');
 const fs = require('fs');
 const should = chai.should();
 
-const AuthService = require('../services/auth-service');
-const File = require('../models/file');
-const { HTTP_RESPONSE } = require('../constants/errors');
-const { STORAGE_PATH } = require('../settings');
+const AuthService = require('../src/services/auth-service');
+const File = require('../src/models/file');
+const { HTTP_RESPONSE } = require('../src/constants/errors');
+const { STORAGE_PATH } = require('../src/settings');
 const { TEST_USER_EMAIL } = require('config');
-const Token = require('../models/token');
-const User = require('../models/user');
+const Token = require('../src/models/token');
+const User = require('../src/models/user');
 
 const testUser = {
   name: 'Vasya',

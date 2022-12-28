@@ -7,12 +7,12 @@ const fs = require('fs');
 const path = require('path');
 const should = chai.should();
 
-const { TOKEN_TYPE } = require('../constants/constants');
+const { TOKEN_TYPE } = require('../src/constants/constants');
 const server = require('../app');
-const { STORAGE_PATH, STATIC_PATH } = require('../settings');
+const { STORAGE_PATH, STATIC_PATH } = require('../src/settings');
 const { TEST_USER_EMAIL } = require('config');
-const Token = require('../models/token');
-const User = require('../models/user');
+const Token = require('../src/models/token');
+const User = require('../src/models/user');
 
 chai.use(chaiHttp);
 
