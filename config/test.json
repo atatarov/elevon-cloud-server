@@ -1,7 +1,15 @@
 {
   "PORT": "3022",
-  "DBHost": "mongodb://localhost:27017/elevon-cloud-test-db",
-  "STORAGE_NAME": "test-files",
-  "STATIC_DIR_NAME": "test-static",
-  "SECRET_KEY": "some-secret-key"
+  "DBHost": "mongodb://localhost:27017/elevon-cloud",
+  "STORAGE_NAME": "files",
+  "STATIC_DIR_NAME": "static",
+  "JWT_ACCESS_SECRET": "jwt-access-secret-key",
+  "JWT_REFRESH_SECRET": "jwt-refresh-secret-key",
+  "SMTP_HOST": "",
+  "SMTP_PORT": "",
+  "SMTP_USER": "",
+  "SMTP_PASSWORD": "",
+  "API_URL": "https://elevon-cloud-server.fvds.ru",
+  "CLIENT_URL": "https://elevon-cloud.fvds.ru",
+  "TEST_USER_EMAIL": ""
 }

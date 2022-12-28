@@ -1,8 +1,24 @@
-const { SECRET_KEY } = require('config');
+const {
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
+  SMTP_HOST,
+  SMTP_PORT,
+  SMTP_USER,
+  SMTP_PASSWORD,
+  API_URL,
+  CLIENT_URL,
+} = require('config');
 
 const TOKEN_TYPE = 'Bearer ';
 
 module.exports = {
-  SECRET_KEY,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_SECRET,
   TOKEN_TYPE,
+  SMTP_HOST,
+  SMTP_PORT,
+  SMTP_USER,
+  SMTP_PASSWORD,
+  API_URL,
+  CLIENT_URL,
 };

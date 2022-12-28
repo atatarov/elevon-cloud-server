@@ -10,19 +10,19 @@ const should = chai.should();
 const { TOKEN_TYPE } = require('../constants/constants');
 const server = require('../app');
 const { STORAGE_PATH, STATIC_PATH } = require('../settings');
+const { TEST_USER_EMAIL } = require('config');
+const Token = require('../models/token');
 const User = require('../models/user');
 
 chai.use(chaiHttp);
 
-const userEmail = 'anothertestmail@gmail.com';
-const userPassword = '1234567890';
 const testAvatarName = 'test-avatar.jpg';
 const testAvatarPath = path.join(__dirname, 'src', testAvatarName);
-let token = '';
 
-const user = {
-  email: userEmail,
-  password: userPassword,
+const testUser = {
+  name: 'Vasya',
+  email: TEST_USER_EMAIL,
+  password: 'test-password',
 };
 
 describe('User', () => {
@@ -37,13 +37,14 @@ describe('User', () => {
     fs.mkdirSync(STORAGE_PATH);
     fs.mkdirSync(STATIC_PATH);
     await User.deleteMany({});
+    await Token.deleteMany({});
   });
 
   before((done) => {
     chai
       .request(server)
       .post('/signup')
-      .send(user)
+      .send(testUser)
       .end((err, res) => {
         res.should.have.status(200);
         done();
@@ -51,13 +52,30 @@ describe('User', () => {
   });
 
   before((done) => {
+    User.findOne({ email: testUser.email }).then((user) => {
+      const { activationLink } = user;
+      chai
+        .request(server)
+        .get(`/activate/${activationLink}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          done();
+        });
+    });
+  });
+
+  before((done) => {
+    const user = {
+      email: testUser.email,
+      password: testUser.password,
+    };
     chai
       .request(server)
       .post('/signin')
       .send(user)
       .end((err, res) => {
         res.should.have.status(200);
-        token = res.body.token;
+        testUser.accessToken = res.body.accessToken;
         done();
       });
   });
@@ -67,11 +85,11 @@ describe('User', () => {
       chai
         .request(server)
         .get('/user/me')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('_id');
+          res.body.should.have.property('id');
           res.body.should.have.property('name');
           res.body.should.have.property('email');
           res.body.should.not.have.property('password');
@@ -88,12 +106,12 @@ describe('User', () => {
       chai
         .request(server)
         .post('/user/me/avatar')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .attach('file', testAvatarPath)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
-          res.body.should.have.property('_id');
+          res.body.should.have.property('id');
           res.body.should.have.property('name');
           res.body.should.have.property('email');
           res.body.should.not.have.property('password');

@@ -10,14 +10,19 @@ const server = require('../app');
 const should = chai.should();
 
 const { HTTP_RESPONSE } = require('../constants/errors');
+const { TEST_USER_EMAIL } = require('config');
 const { TOKEN_TYPE } = require('../constants/constants');
 const { STORAGE_PATH } = require('../settings');
 const File = require('../models/file');
+const Token = require('../models/token');
 const User = require('../models/user');
 
-const userEmail = 'anothertestmail@gmail.com';
-const userPassword = '1234567890';
-let token = '';
+const testUser = {
+  name: 'Vasya',
+  email: TEST_USER_EMAIL,
+  password: 'test-password',
+};
+
 let secondFolderId = '';
 
 let testFileId = '';
@@ -49,17 +54,14 @@ describe('File', () => {
     fs.mkdirSync(STORAGE_PATH);
     await User.deleteMany({});
     await File.deleteMany({});
+    await Token.deleteMany({});
   });
 
   before((done) => {
-    const user = {
-      email: userEmail,
-      password: userPassword,
-    };
     chai
       .request(server)
       .post('/signup')
-      .send(user)
+      .send(testUser)
       .end((err, res) => {
         res.should.have.status(200);
         done();
@@ -67,9 +69,22 @@ describe('File', () => {
   });
 
   before((done) => {
+    User.findOne({ email: testUser.email }).then((user) => {
+      const { activationLink } = user;
+      chai
+        .request(server)
+        .get(`/activate/${activationLink}`)
+        .end((err, res) => {
+          res.should.have.status(200);
+          done();
+        });
+    });
+  });
+
+  before((done) => {
     const user = {
-      email: userEmail,
-      password: userPassword,
+      email: testUser.email,
+      password: testUser.password,
     };
     chai
       .request(server)
@@ -77,7 +92,7 @@ describe('File', () => {
       .send(user)
       .end((err, res) => {
         res.should.have.status(200);
-        token = res.body.token;
+        testUser.accessToken = res.body.accessToken;
         done();
       });
   });
@@ -91,7 +106,7 @@ describe('File', () => {
       chai
         .request(server)
         .post('/mkdir')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .send(file)
         .end((err, res) => {
           res.should.have.status(200);
@@ -118,7 +133,7 @@ describe('File', () => {
       chai
         .request(server)
         .post('/mkdir')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .send(file)
         .end((err, res) => {
           res.should.have.status(HTTP_RESPONSE.conflict.status);
@@ -136,7 +151,7 @@ describe('File', () => {
       chai
         .request(server)
         .post('/mkdir')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .send(file)
         .end((err, res) => {
           res.should.have.status(200);
@@ -164,7 +179,7 @@ describe('File', () => {
       chai
         .request(server)
         .post('/mkdir')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .send(file)
         .end((err, res) => {
           res.should.have.status(200);
@@ -187,7 +202,7 @@ describe('File', () => {
       chai
         .request(server)
         .get('/files')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('array');
@@ -203,7 +218,7 @@ describe('File', () => {
         .request(server)
         .get('/files')
         .query({ parent: secondFolderId })
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('array');
@@ -218,7 +233,7 @@ describe('File', () => {
       chai
         .request(server)
         .post('/files/upload')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .attach('file', testFilePath)
         .end((err, res) => {
           res.should.have.status(200);
@@ -240,7 +255,7 @@ describe('File', () => {
       chai
         .request(server)
         .post('/files/upload')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .attach('file', testFilePath)
         .end((err, res) => {
           res.should.have.status(HTTP_RESPONSE.conflict.status);
@@ -261,7 +276,7 @@ describe('File', () => {
       chai
         .request(server)
         .post('/files/upload')
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .field(file)
         .attach('file', testFilePath)
         .end((err, res) => {
@@ -300,7 +315,7 @@ describe('File', () => {
       chai
         .request(server)
         .get(`/files/download/${testFileId}`)
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .buffer()
         .parse(binaryParser)
         .end((err, res) => {
@@ -317,7 +332,7 @@ describe('File', () => {
       chai
         .request(server)
         .delete(`/files/delete/${testFileId}`)
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');
@@ -333,7 +348,7 @@ describe('File', () => {
       chai
         .request(server)
         .delete(`/files/delete/${testFileId}`)
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .end((err, res) => {
           res.should.have.status(HTTP_RESPONSE.notFound.status);
           done();
@@ -346,7 +361,7 @@ describe('File', () => {
       chai
         .request(server)
         .get(`/files/download/${testFileId}`)
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .buffer()
         .parse(binaryParser)
         .end((err, res) => {
@@ -361,7 +376,7 @@ describe('File', () => {
       chai
         .request(server)
         .delete(`/files/delete/${secondFolderId}`)
-        .set('authorization', `${TOKEN_TYPE}${token}`)
+        .set('authorization', `${TOKEN_TYPE}${testUser.accessToken}`)
         .end((err, res) => {
           res.should.have.status(200);
           res.body.should.be.a('object');

@@ -1,77 +1,93 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const AuthService = require('../services/auth-service');
+const { CLIENT_URL } = require('../constants/constants');
 
-const BadRequestError = require('../errors/bad-request-error');
-const Conflict = require('../errors/conflict-error');
-const FileService = require('../services/file-service.js');
-const File = require('../models/file');
-const UnauthorizedError = require('../errors/unauthorized-error');
-const User = require('../models/user');
+const REFRESH_TOKEN_DAYS = 30;
 
-const { ERROR_TYPE } = require('../constants/errors');
-const { SECRET_KEY } = require('../constants/constants.js');
+function daysToMilliseconds(days) {
+  // hour  min  sec  ms
+  return days * 24 * 60 * 60 * 1000;
+}
 
-const generateAccessToken = (_id) => {
-  const payload = { _id };
-  return jwt.sign(payload, SECRET_KEY, {
-    expiresIn: 36000,
-  });
-};
+const REFRESH_TOKEN_AGE = daysToMilliseconds(REFRESH_TOKEN_DAYS);
 
-module.exports.registation = async (req, res, next) => {
-  const { name, email, password } = req.body;
-
+module.exports.registration = async (req, res, next) => {
   try {
-    const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      name,
-      email,
-      password: hash,
-    });
-    /* parent shouldn't be empty,
-       user shouldn't have ability of selecting user folder
-       with all root files
-    */
-    const file = await File.create({
-      user: user._id,
-      name: 'author',
-      type: 'dir',
-      parent: user._id,
-    });
-    await FileService.createDir(file);
+    const { name, email, password } = req.body;
+    const userData = await AuthService.registration(name, email, password);
     res.send({
-      _id: user._id,
-      email: user.email,
-      name: user.name,
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      isActivated: userData.isActivated,
     });
-  } catch (err) {
-    if (err.name === ERROR_TYPE.validity || err.name === ERROR_TYPE.cast) {
-      next(new BadRequestError());
-      return;
-    } else if (err.name === ERROR_TYPE.fileExist) {
-      next(new Conflict());
-      return;
-    }
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 
-module.exports.login = (req, res, next) => {
-  const { email, password } = req.body;
+module.exports.login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const userData = await AuthService.login(email, password);
+    res.cookie('refreshToken', userData.refreshToken, {
+      maxAge: REFRESH_TOKEN_AGE,
+      httpOnly: true,
+    });
+    res.send({
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      isActivated: userData.isActivated,
+      diskSpace: userData.diskSpace,
+      usedSpace: userData.usedSpace,
+      avatar: userData.avatar,
+      accessToken: userData.accessToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = generateAccessToken(user._id);
-      const userData = {
-        avatar: user.avatar,
-        diskSpace: user.diskSpace,
-        email: user.email,
-        name: user.name,
-        usedSpace: user.usedSpace,
-        _id: user._id,
-      };
+module.exports.activateAccount = async (req, res, next) => {
+  try {
+    const activationLink = req.params.link;
+    await AuthService.activateAccount(activationLink);
+    res.redirect(200, CLIENT_URL);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      res.send({ user: userData, token });
-    })
-    .catch(() => next(new UnauthorizedError()));
+module.exports.logout = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.cookies;
+    await AuthService.logout(refreshToken);
+    res.clearCookie('refreshToken');
+    res.send({ message: 'Token was removed' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.refreshAccessToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.cookies;
+    const userData = await AuthService.refreshToken(refreshToken);
+    res.cookie('refreshToken', userData.refreshToken, {
+      maxAge: REFRESH_TOKEN_AGE,
+      httpOnly: true,
+    });
+    res.send({
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      isActivated: userData.isActivated,
+      diskSpace: userData.diskSpace,
+      usedSpace: userData.usedSpace,
+      avatar: userData.avatar,
+      accessToken: userData.accessToken,
+    });
+  } catch (error) {
+    next(error);
+  }
 };

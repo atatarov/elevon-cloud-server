@@ -13,20 +13,34 @@ module.exports.uploadAvatar = async (req, res, next) => {
     const filePath = path.join(STATIC_PATH, avatarName);
     file.mv(filePath);
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user.id);
     user.avatar = avatarName;
     await user.save();
-    return res.send(user);
+    return res.send({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      diskSpace: user.diskSpace,
+      usedSpace: user.usedSpace,
+      avatar: user.avatar,
+    });
   } catch (error) {
     next(error);
   }
 };
 
 module.exports.getCurrentUser = (req, res, next) => {
-  const { _id } = req.user;
-  User.findById(_id)
+  const { id } = req.user;
+  User.findById(id)
     .then((user) => {
-      res.send(user);
+      res.send({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        diskSpace: user.diskSpace,
+        usedSpace: user.usedSpace,
+        avatar: user.avatar,
+      });
     })
     .catch(next);
 };

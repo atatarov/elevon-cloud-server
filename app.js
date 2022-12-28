@@ -1,5 +1,6 @@
 const bodyParser = require('body-parser');
 const config = require('config');
+const cookies = require("cookie-parser");
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
@@ -39,6 +40,7 @@ initStorage();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookies());
 app.use(fileUpload({}));
 app.use(express.static(STATIC_DIR_NAME));
 app.use(cors);
