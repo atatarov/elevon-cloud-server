@@ -9,7 +9,7 @@ const should = chai.should();
 
 const { TOKEN_TYPE } = require('../src/constants/constants');
 const server = require('../app');
-const { STORAGE_PATH, STATIC_PATH } = require('../src/settings');
+const { STORAGE_PATH, STATIC_PATH } = require('../settings');
 const { TEST_USER_EMAIL } = require('config');
 const Token = require('../src/models/token');
 const User = require('../src/models/user');

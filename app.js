@@ -17,7 +17,7 @@ const userRouter = require('./src/routes/user');
 
 const { cors } = require('./src/middlewares/cors');
 const { PORT = 5000, DBHost, STATIC_DIR_NAME } = config;
-const { STORAGE_PATH } = require('./src/settings');
+const { STORAGE_PATH } = require('./settings');
 
 const initStorage = () => {
   if (!fs.existsSync(STORAGE_PATH)) {

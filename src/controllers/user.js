@@ -2,7 +2,7 @@ const path = require('path');
 const Uuid = require('uuid');
 
 const User = require('../models/user');
-const { STATIC_PATH } = require('../settings');
+const { STATIC_PATH } = require('../../settings');
 
 module.exports.uploadAvatar = async (req, res, next) => {
   try {
