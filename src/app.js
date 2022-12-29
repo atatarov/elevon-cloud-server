@@ -9,15 +9,15 @@ const fs = require('fs');
 
 const { errors } = require('celebrate');
 
-const auth = require('./src/middlewares/auth');
-const authRouter = require('./src/routes/auth');
-const commonError = require('./src/middlewares/common-error');
-const fileRouter = require('./src/routes/file');
-const userRouter = require('./src/routes/user');
+const auth = require('./middlewares/auth');
+const authRouter = require('./routes/auth');
+const commonError = require('./middlewares/common-error');
+const fileRouter = require('./routes/file');
+const userRouter = require('./routes/user');
 
-const { cors } = require('./src/middlewares/cors');
+const { cors } = require('./middlewares/cors');
 const { PORT = 5000, DBHost, STATIC_DIR_NAME } = config;
-const { STORAGE_PATH } = require('./settings');
+const { STORAGE_PATH } = require('../settings');
 
 const initStorage = () => {
   if (!fs.existsSync(STORAGE_PATH)) {
